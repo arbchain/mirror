@@ -2,6 +2,7 @@ import arg from 'arg';
 import inquirer from 'inquirer';
 
 import {compile} from './compile.js';
+import {deploy} from './deploy.js';
 
 function parseArgumentsIntoOptions(rawArgs) {
  const args = arg(
@@ -68,6 +69,7 @@ export async function cli(args) {
   compile(options.dir);
  }
  else if (options.template === 'deploy') {
-  console.log('coming soon!');
+  // compile(options.dir);
+  await deploy(options.dir);
  }
 }

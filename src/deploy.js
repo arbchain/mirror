@@ -2,24 +2,30 @@ const fs = require("fs-extra");
 const path = require("path");
 const Web3 = require("web3");
 const EEAClient = require("web3-eea");
-//Get the ABI
-const EventEmitterAbi = require("./client/src/build/TodoContract.json");
-//Keys
-const { orion, besu } = require("./utils/keys.js");
-//Get the bytecode
-const binary = fs.readFileSync(path.resolve(__dirname, "./client/src/build/TodoContract.bin"));
-//Setting the web3 connection
-const web3 = new EEAClient(new Web3(besu.node1.url), 2018);
-//creating instance of contract
-new web3.eth.Contract(EventEmitterAbi);
 
-const addressPath = path.resolve(__dirname, "client", "src", "address");
-fs.removeSync(addressPath);
+//Keys
+const { orion, besu } = require(path.resolve("./", "wallet", "keys.js"));
+const migration = require(path.resolve("./", "migration"));
+const config = require(path.resolve("./", "mirror-config.js"));
+
+//Setting the web3 connection
+const web3 = new EEAClient(new Web3(`${config.networks.development.host}:${config.networks.development.port}`), 2018);
+
+const addressPath = path.resolve("./", "build");
 
 //Creating a contract object to deploy
-const createPrivateContract = () => {
+const createPrivateContract = (contract) => {
+
+  //Get the ABI
+  const ContractAbi = require(path.resolve("./", `./build/${contract}.json`));
+  //Get the bytecode
+  //creating instance of contract
+  new web3.eth.Contract(ContractAbi);
+
+  const binary = fs.readFileSync(path.resolve("./", `./build/${contract}.bin`));
+
   //Step 1: Check for the constructor if available
-  const functionAbi = EventEmitterAbi.find((e) => {
+  const functionAbi = ContractAbi.find((e) => {
     return e.type === "constructor";
   });
 
@@ -34,23 +40,31 @@ const createPrivateContract = () => {
 };
 
 //Getting the contract address
-const storeTransactionReceipt = async (transactionHash) => {
+const storeTransactionReceipt = async (contract, transactionHash) => {
 
-  const transactionRecepit = await web3.priv.getTransactionReceipt(transactionHash, orion.node1.publicKey);
-  console.log("Private transaction Contract Address", transactionRecepit.contractAddress);
+  const transactionReceipt = await web3.priv.getTransactionReceipt(transactionHash, orion.node1.publicKey);
+  console.log("Private transaction Contract Address", transactionReceipt.contractAddress);
   await fs.ensureDirSync(addressPath);
-  fs.writeFile(path.resolve(addressPath, "address" + ".json"), JSON.stringify(transactionRecepit), (err) => {
-    console.log(`Storing transaction receipt at ${path.resolve(addressPath, "address" + ".json")}`);
+  fs.writeFile(path.resolve(addressPath, `${contract}_receipt` + ".json"), JSON.stringify(transactionReceipt), (err) => {
+    console.log(`Storing transaction receipt at ${path.resolve(addressPath, `${contract}_receipt` + ".json")}`);
     if (err) throw err;
   });
 };
 
-const deploy = async () => {
-   const transactionHash =  await createPrivateContract();
-   console.log("Private contract deployed with transaction hash: ", transactionHash)
-   await storeTransactionReceipt(transactionHash);
-};
+export const deploy = async (dirPath) => {
 
-if (require.main === module) {
-  deploy();
-}
+  console.log(`Parsing the directory ${dirPath}`);
+  for (const contract in migration) {
+    if(!migration[contract].length) {
+      const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
+      if(buildExists) {
+        const transactionHash = await createPrivateContract(contract);
+        console.log("Private contract deployed with transaction hash: ", transactionHash);
+        await storeTransactionReceipt(contract, transactionHash);
+      }
+    else {
+      console.log("Please compile the contracts first!")
+      }
+    }
+  }
+};
