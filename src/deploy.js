@@ -9,9 +9,13 @@ const migration = require(path.resolve("./", "migration"));
 const config = require(path.resolve("./", "mirror-config.js"));
 
 //Setting the web3 connection
-const web3 = new EEAClient(new Web3(`${config.networks.development.host}:${config.networks.development.port}`), 2018);
-
-const addressPath = path.resolve("./", "build");
+try {
+  var web3 = new EEAClient(new Web3(`${config.networks.development.host}:${config.networks.development.port}`), 2018);
+}
+catch (error) {
+  console.log("Web3 connection error: ", error.message);
+}
+var addressPath = path.resolve("./", "build");
 
 //Creating a contract object to deploy
 const createPrivateContract = (contract) => {
@@ -51,9 +55,13 @@ const storeTransactionReceipt = async (contract, transactionHash) => {
   });
 };
 
-export const deploy = async (dirPath) => {
+export const deploy = async (buildPath) => {
 
-  console.log(`Parsing the directory ${dirPath}`);
+  console.log("Parsing the migration file");
+
+  //Updating the build path
+  addressPath = buildPath;
+
   for (const contract in migration) {
     if(!migration[contract].length) {
       const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)

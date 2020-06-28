@@ -2,9 +2,9 @@ const path = require("path");
 const fs = require("fs-extra");
 const solc = require("solc");
 
-function compileFile(dir, file) {
+function compileFile(buildPath, dir, file) {
   const fileToCompile = path.join(dir, file);
-  const buildPath = path.resolve("./", "build");
+
   console.log("Compiling contract:", fileToCompile);
   //get the source code
   let source = fs.readFileSync(fileToCompile).toString();
@@ -48,13 +48,16 @@ function compileFile(dir, file) {
 }
 
 
-export function compile(dirPath) {
+export function compile(dirPath, buildPath) {
   console.log(`Parsing the directory ${dirPath}`);
+
+  // Updating build path
+  buildPath = buildPath
   let solidityFiles = [];
   fs.readdirSync(dirPath).forEach((file) => {
     if (file.match(/.*.sol$/)) {
       solidityFiles.push(file);
     }
   });
-  solidityFiles.forEach((file) => compileFile(dirPath, file));
+  solidityFiles.forEach((file) => compileFile(buildPath, dirPath, file));
 }
