@@ -8,6 +8,13 @@ function compileFile(buildPath, dir, file) {
   console.log("Compiling contract:", fileToCompile);
   //get the source code
   let source = fs.readFileSync(fileToCompile).toString();
+  let imports = source.match(/import.*/g);
+  let importFiles = [];
+  if(imports) {
+    for (file of imports) {
+     importFiles.push(path.resolve(dir, file.match(/'.*'/g)[0].slice(1,-1)))
+    }
+  }
 
   //Setting the options for Solc compiler
   let input = {
@@ -26,7 +33,22 @@ function compileFile(buildPath, dir, file) {
     },
   };
 
-  let compiledCode = JSON.parse(solc.compile(JSON.stringify(input)));
+  function findImports() {
+      return {
+        contents:
+            fs.readFileSync(importFiles[0]).toString()
+      };
+  }
+
+  let compiledCode;
+  if (importFiles.length > 0) {
+
+    compiledCode = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
+  }
+  else
+    {
+      compiledCode = JSON.parse(solc.compile(JSON.stringify(input)));
+    }
 
   fs.ensureDirSync(buildPath);
   //outputing .bin
