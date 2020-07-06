@@ -14,16 +14,17 @@ Mirror is a compiling, testing and deployment for Hyperledger Besu, aiming to ma
 #Install
 $ npm install -g mirror-besu
 
-
 # Compile 
 mirror compile
 
-# Deploy a private contract
+# Deploy a private contract (Set the privacy members in migration directory)
 mirror deploy --private
 
+# Test using MochaJS
+mirror test
 ```
 
 ## Development TODOs:
 
 * [x] Create basic compile and deploy scripts
-* [ ] Create a privacy group config for public deployment
+* [x] Create a privacy group config for public deployment

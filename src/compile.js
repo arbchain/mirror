@@ -12,7 +12,7 @@ function compileFile(buildPath, dir, file) {
   let importFiles = [];
   if(imports) {
     for (file of imports) {
-     importFiles.push(path.resolve(dir, file.match(/'.*'/g)[0].slice(1,-1)))
+     importFiles.push(path.resolve(dir, file.match(/('|").*('|")/g)[0].slice(1,-1)))
     }
   }
 

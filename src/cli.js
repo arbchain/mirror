@@ -1,5 +1,7 @@
 import arg from 'arg';
+const fs = require('fs');
 import inquirer from 'inquirer';
+const Mocha = require('mocha');
 const path = require("path");
 
 import {compile} from './compile.js';
@@ -11,6 +13,7 @@ function parseArgumentsIntoOptions(rawArgs) {
      {
       '--private': Boolean,
       '--dir': String,
+      '--testDir': String,
       '--yes': Boolean,
       '-p': '--private',
       '-y': '--yes',
@@ -23,31 +26,32 @@ function parseArgumentsIntoOptions(rawArgs) {
   skipPrompts: args['--yes'] || false,
   private: args['--private'] || false,
   dir: args['--dir'] || 'contract',
-  template: args._[0],
+  testDir: args['--testDir'] || 'test',
+  action: args._[0],
  };
 }
 
 async function promptForMissingOptions(options) {
- const defaultTemplate = 'compile';
+ const defaultAction = 'compile';
  if (options.skipPrompts) {
   return {
    ...options,
-   template: options.template || defaultTemplate,
+   action: options.action || defaultAction,
   };
  }
 
  const questions = [];
- if (!options.template) {
+ if (!options.action) {
   questions.push({
    type: 'list',
-   name: 'template',
+   name: 'action',
    message: 'Please choose an operation',
-   choices: ['compile', 'deploy'],
-   default: defaultTemplate,
+   choices: ['compile', 'deploy', 'test'],
+   default: defaultAction,
   });
  }
 
- if (!options.private && (options.template === 'deploy')) {
+ if (!options.private && (options.action === 'deploy')) {
   questions.push({
    type: 'private',
    name: 'private',
@@ -59,7 +63,7 @@ async function promptForMissingOptions(options) {
  const answers = await inquirer.prompt(questions);
  return {
   ...options,
-  template: options.template || answers.template,
+  action: options.action || answers.action,
   private: options.private || ! answers.private,
  };
 }
@@ -67,11 +71,36 @@ async function promptForMissingOptions(options) {
 export async function cli(args) {
  let options = parseArgumentsIntoOptions(args);
  options = await promptForMissingOptions(options);
- if (options.template === 'compile') {
+ if (options.action === 'compile') {
   compile(options.dir, config.contracts_build_directory);
  }
- else if (options.template === 'deploy') {
+ else if (options.action === 'deploy') {
   // compile(options.dir);
-  await deploy(config.contracts_build_directory);
+  await deploy(config.contracts_build_directory, options.private);
+  console.log("asdsad")
+ }
+ else if (options.action === 'test') {
+
+  // compile(options.dir);
+  await deploy(config.contracts_build_directory, options.private);
+
+  let mocha = new Mocha();
+  mocha.timeout(15000);
+  // Add each .js file to the mocha instance
+  fs.readdirSync(options.testDir).filter(function(file) {
+   // Only keep the .js files
+   return file.substr(-3) === '.js';
+
+  }).forEach(function(file) {
+   mocha.addFile(
+       path.join(options.testDir, file)
+   );
+  });
+
+  // Run the tests.
+  mocha.run(function(failures) {
+   process.exitCode = failures ? 1 : 0;  // exit with non-zero status if there were failures
+  });
+
  }
 }

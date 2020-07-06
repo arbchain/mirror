@@ -1,7 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const Web3 = require("web3");
-const EEAClient = require("web3-eea");
+const EEAClient = require("web3-besu");
 
 //Keys
 const { orion, besu } = require(path.resolve("./", "wallet", "keys.js"));
@@ -10,15 +10,27 @@ const config = require(path.resolve("./", "mirror-config.js"));
 
 //Setting the web3 connection
 try {
-  var web3 = new EEAClient(new Web3(`${config.networks.development.host}:${config.networks.development.port}`), 2018);
+  var web3 = new EEAClient(new Web3(`${config.networks.node1.host}:${config.networks.node1.port}`), 2018);
 }
 catch (error) {
   console.log("Web3 connection error: ", error.message);
 }
 var addressPath = path.resolve("./", "build");
 
+// Creating a privacy group
+
+const createPrivacyGroup = async (participants) => {
+
+  return await web3.privx.createPrivacyGroup({
+    participants: participants,
+    enclaveKey: orion.node1.publicKey,
+    privateFrom: orion.node1.publicKey,
+    privateKey: besu.node1.privateKey
+  });
+}
+
 //Creating a contract object to deploy
-const createPrivateContract = (contract) => {
+const createPrivateContract = (contract, privacyGroupId) => {
 
   //Get the ABI
   const ContractAbi = require(path.resolve("./", `./build/${contract}.json`));
@@ -37,7 +49,7 @@ const createPrivateContract = (contract) => {
   const contractOptions = {
     data: `0x${binary}`,
     privateFrom: orion.node1.publicKey,
-    privateFor: [orion.node2.publicKey],
+    privacyGroupId,
     privateKey: besu.node1.privateKey,
   };
   return web3.eea.sendRawTransaction(contractOptions);
@@ -55,18 +67,26 @@ const storeTransactionReceipt = async (contract, transactionHash) => {
   });
 };
 
-export const deploy = async (buildPath) => {
+export const deploy = async (buildPath, privacy) => {
 
   console.log("Parsing the migration file");
 
   //Updating the build path
   addressPath = buildPath;
 
-  for (const contract in migration) {
-    if(!migration[contract].length) {
+
+  let privacyGroup = await createPrivacyGroup(migration.groups.public.privacyGroupMembers)
+
+  for (const contract in migration.contracts) {
+
+    //create privacy group if not public deployment
+    privacyGroup = privacy ? await createPrivacyGroup(migration.contracts[contract].privacyGroupMembers) : privacyGroup
+    let privacyGroupId = privacyGroup.privacyGroupId
+
+    if(!migration.contracts[contract].args.length) {
       const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
       if(buildExists) {
-        const transactionHash = await createPrivateContract(contract);
+        const transactionHash = await createPrivateContract(contract, privacyGroupId);
         console.log("Private contract deployed with transaction hash: ", transactionHash);
         await storeTransactionReceipt(contract, transactionHash);
       }
