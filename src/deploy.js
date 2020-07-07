@@ -61,10 +61,8 @@ const storeTransactionReceipt = async (contract, transactionHash) => {
   const transactionReceipt = await web3.priv.getTransactionReceipt(transactionHash, orion.node1.publicKey);
   console.log("Private transaction Contract Address", transactionReceipt.contractAddress);
   await fs.ensureDirSync(addressPath);
-  fs.writeFile(path.resolve(addressPath, `${contract}_receipt` + ".json"), JSON.stringify(transactionReceipt), (err) => {
-    console.log(`Storing transaction receipt at ${path.resolve(addressPath, `${contract}_receipt` + ".json")}`);
-    if (err) throw err;
-  });
+  console.log(`Storing transaction receipt at ${path.resolve(addressPath, `${contract}_receipt` + ".json")}`);
+  await fs.writeFileSync(path.resolve(addressPath, `${contract}_receipt` + ".json"), JSON.stringify(transactionReceipt));
 };
 
 export const deploy = async (buildPath, privacy) => {

@@ -77,7 +77,6 @@ export async function cli(args) {
  else if (options.action === 'deploy') {
   // compile(options.dir);
   await deploy(config.contracts_build_directory, options.private);
-  console.log("asdsad")
  }
  else if (options.action === 'test') {
 
