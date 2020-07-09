@@ -43,11 +43,26 @@ function compileFile(buildPath, dir, file) {
   let compiledCode;
   if (importFiles.length > 0) {
 
-    compiledCode = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
+      compiledCode = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
+      if(compiledCode.errors)
+      {
+        console.log(compiledCode.errors)
+        if(compiledCode.errors.severity === 'error')
+        return;
+      }
+
+
+
   }
   else
     {
-      compiledCode = JSON.parse(solc.compile(JSON.stringify(input)));
+        compiledCode = JSON.parse(solc.compile(JSON.stringify(input)));
+        if(compiledCode.errors)
+        {
+          console.log(compiledCode.errors)
+          if(compiledCode.errors.severity === 'error')
+          return;
+        }
     }
 
   fs.ensureDirSync(buildPath);
