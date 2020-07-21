@@ -72,25 +72,32 @@ export const deploy = async (buildPath, privacy) => {
   //Updating the build path
   addressPath = buildPath;
 
+  try {
 
-  let privacyGroup = await createPrivacyGroup(migration.groups.public.privacyGroupMembers)
+    let privacyGroup = await createPrivacyGroup(migration.groups.public.privacyGroupMembers)
 
-  for (const contract in migration.contracts) {
+    for (const contract in migration.contracts) {
 
-    //create privacy group if not public deployment
-    privacyGroup = privacy ? await createPrivacyGroup(migration.contracts[contract].privacyGroupMembers) : privacyGroup
-    let privacyGroupId = privacyGroup.privacyGroupId
+      //create privacy group if not public deployment
+      privacyGroup = privacy ? await createPrivacyGroup(migration.contracts[contract].privacyGroupMembers) : privacyGroup
+      let privacyGroupId = privacyGroup.privacyGroupId
 
-    if(!migration.contracts[contract].args.length) {
-      const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
-      if(buildExists) {
-        const transactionHash = await createPrivateContract(contract, privacyGroupId);
-        console.log("Private contract deployed with transaction hash: ", transactionHash);
-        await storeTransactionReceipt(contract, transactionHash);
-      }
-    else {
-      console.log("Please compile the contracts first!")
+      if (!migration.contracts[contract].args.length) {
+        const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
+        if (buildExists) {
+          const transactionHash = await createPrivateContract(contract, privacyGroupId);
+          console.log("Private contract deployed with transaction hash: ", transactionHash);
+          await storeTransactionReceipt(contract, transactionHash);
+        } else {
+          console.log("Please compile the contracts first!")
+        }
       }
     }
+  }
+  catch (err) {
+    if(err instanceof Error && err.message.includes("Invalid JSON RPC response")) {
+      console.log("RPC connection error, check if the remote node/ service is running.")
+    }
+
   }
 };
