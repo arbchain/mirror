@@ -30,24 +30,33 @@ const createPrivacyGroup = async (participants) => {
 }
 
 //Creating a contract object to deploy
-const createPrivateContract = (contract, privacyGroupId) => {
+const createPrivateContract = (contract, args, privacyGroupId) => {
 
   //Get the ABI
-  const ContractAbi = require(path.resolve("./", `./build/${contract}.json`));
+  const ContractAbi = require(path.resolve(addressPath, `${contract}.json`));
   //Get the bytecode
   //creating instance of contract
   new web3.eth.Contract(ContractAbi);
 
-  const binary = fs.readFileSync(path.resolve("./", `./build/${contract}.bin`));
+  const binary = fs.readFileSync(path.resolve(addressPath, `${contract}.bin`));
 
-  //Step 1: Check for the constructor if available
-  const functionAbi = ContractAbi.find((e) => {
-    return e.type === "constructor";
-  });
+    //Step 1: Check for the constructor if available
+    const constructorAbi = ContractAbi.find((e) => {
+      return e.type === "constructor";
+    });
+
+
+  let constructorArgs = ''
+  if(constructorAbi && args.length) {
+      constructorArgs = web3.eth.abi
+        .encodeParameters(constructorAbi.inputs, args)
+        .slice(2);
+  }
+  
 
   //Create the transaction object
   const contractOptions = {
-    data: `0x${binary}`,
+    data: `0x${binary}${constructorArgs}`,
     privateFrom: orion.node1.publicKey,
     privacyGroupId,
     privateKey: besu.node1.privateKey,
@@ -82,21 +91,23 @@ export const deploy = async (buildPath, privacy) => {
       privacyGroup = privacy ? await createPrivacyGroup(migration.contracts[contract].privacyGroupMembers) : privacyGroup
       let privacyGroupId = privacyGroup.privacyGroupId
 
-      if (!migration.contracts[contract].args.length) {
-        const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
-        if (buildExists) {
-          const transactionHash = await createPrivateContract(contract, privacyGroupId);
-          console.log("Private contract deployed with transaction hash: ", transactionHash);
-          await storeTransactionReceipt(contract, transactionHash);
-        } else {
-          console.log("Please compile the contracts first!")
-        }
+      const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
+      if (buildExists) {
+        const transactionHash = await createPrivateContract(contract, migration.contracts[contract].args, privacyGroupId);
+        console.log("Private contract deployed with transaction hash: ", transactionHash);
+        await storeTransactionReceipt(contract, transactionHash);
+      } else {
+        console.log("Please compile the contracts first!")
       }
     }
   }
   catch (err) {
+
     if(err instanceof Error && err.message.includes("Invalid JSON RPC response")) {
       console.log("RPC connection error, check if the remote node/ service is running.")
+    }
+    else {
+      console.log("Deployment error: ", err)
     }
 
   }
