@@ -14,6 +14,7 @@ function parseArgumentsIntoOptions(rawArgs) {
       '--private': Boolean,
       '--dir': String,
       '--testDir': String,
+      '--buildPath': String,
       '--yes': Boolean,
       '-p': '--private',
       '-y': '--yes',
@@ -27,6 +28,7 @@ function parseArgumentsIntoOptions(rawArgs) {
   private: args['--private'] || false,
   dir: args['--dir'] || 'contract',
   testDir: args['--testDir'] || 'test',
+  buildPath: args['--buildPath'] || config.contracts_build_directory,
   action: args._[0],
  };
 }
@@ -72,16 +74,16 @@ export async function cli(args) {
  let options = parseArgumentsIntoOptions(args);
  options = await promptForMissingOptions(options);
  if (options.action === 'compile') {
-  compile(options.dir, config.contracts_build_directory);
+  compile(options.dir, options.buildPath);
  }
  else if (options.action === 'deploy') {
   // compile(options.dir);
-  await deploy(config.contracts_build_directory, options.private);
+  await deploy(options.buildPath, options.private);
  }
  else if (options.action === 'test') {
 
   // compile(options.dir);
-  await deploy(config.contracts_build_directory, options.private);
+  await deploy(options.buildPath, options.private);
 
   let mocha = new Mocha();
   mocha.timeout(15000);

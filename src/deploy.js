@@ -52,7 +52,7 @@ const createPrivateContract = (contract, args, privacyGroupId) => {
         .encodeParameters(constructorAbi.inputs, args)
         .slice(2);
   }
-  
+
 
   //Create the transaction object
   const contractOptions = {
