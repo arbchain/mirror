@@ -70,17 +70,14 @@ function compileFile(buildPath, dir, file) {
 
   for (let contractName in compiledCode.contracts[fileToCompile]) {
     const contractByteCode = compiledCode.contracts[fileToCompile][contractName].evm.bytecode.object;
-    fs.writeFile(path.resolve(buildPath, contractName + ".bin"), contractByteCode, (err) => {
-      console.log(`Writing ByteCode to: ${path.resolve(buildPath, contractName + ".bin")}`);
-      if (err) throw err;
-    });
+    fs.writeFileSync(path.resolve(buildPath, contractName + ".bin"), contractByteCode)
+    console.log(`Writing ByteCode to: ${path.resolve(buildPath, contractName + ".bin")}`);
+
 
     const contractABI = JSON.stringify(compiledCode.contracts[fileToCompile][contractName].abi);
-    fs.writeFile(path.resolve(buildPath, contractName + ".json"), contractABI, (err) => {
-      console.log(`Writing ABI to: ${path.resolve(buildPath, contractName + ".json")} `);
-      //     In case of a error throw err.
-      if (err) throw err;
-    });
+    fs.writeFileSync(path.resolve(buildPath, contractName + ".json"), contractABI)
+    console.log(`Writing ABI to: ${path.resolve(buildPath, contractName + ".json")} `)
+
   }
 }
 

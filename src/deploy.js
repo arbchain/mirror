@@ -3,18 +3,25 @@ const path = require("path");
 const Web3 = require("web3");
 const EEAClient = require("web3-besu");
 
-//Keys
-const { orion, besu } = require(path.resolve("./", "wallet", "keys.js"));
-const migration = require(path.resolve("./", "migration"));
-const config = require(path.resolve("./", "mirror-config.js"));
-
-//Setting the web3 connection
 try {
-  var web3 = new EEAClient(new Web3(`${config.networks.node1.host}:${config.networks.node1.port}`), 2018);
+
+//Keys
+  var {orion, besu} = require(path.resolve("./", "wallet", "keys.js"));
+  const config = require(path.resolve("./", "mirror-config.js"));
+
+  //Setting the web3 connection
+  try {
+    var web3 = new EEAClient(new Web3(`${config.networks.node1.host}:${config.networks.node1.port}`), 2018);
+  }
+  catch (error) {
+    console.log("Web3 connection error: ", error.message);
+  }
 }
-catch (error) {
-  console.log("Web3 connection error: ", error.message);
+catch {
+  //pass: silent the import errors
 }
+
+
 var addressPath = path.resolve("./", "build");
 
 // Creating a privacy group
@@ -77,6 +84,8 @@ const storeTransactionReceipt = async (contract, transactionHash) => {
 export const deploy = async (buildPath, privacy) => {
 
   console.log("Parsing the migration file");
+
+  const migration = require(path.resolve("./", "migration"));
 
   //Updating the build path
   addressPath = buildPath;

@@ -3,11 +3,19 @@ const fs = require('fs');
 import inquirer from 'inquirer';
 const Mocha = require('mocha');
 const path = require("path");
+const logSymbols = require('log-symbols');
+const execa = require('execa');
 
 import {compile} from './compile.js';
 import {deploy} from './deploy.js';
-const config = require(path.resolve("./", "mirror-config.js"));
 
+let buildDir = ''
+try {
+  buildDir = require(path.resolve("./", "mirror-config.js")).contracts_build_directory;
+}
+catch(err) {
+ //pass: silent the import errors
+}
 function parseArgumentsIntoOptions(rawArgs) {
  const args = arg(
      {
@@ -28,7 +36,7 @@ function parseArgumentsIntoOptions(rawArgs) {
   private: args['--private'] || false,
   dir: args['--dir'] || 'contract',
   testDir: args['--testDir'] || 'test',
-  buildPath: args['--buildPath'] || config.contracts_build_directory,
+  buildPath: args['--buildPath'] || buildDir,
   action: args._[0],
  };
 }
@@ -48,7 +56,7 @@ async function promptForMissingOptions(options) {
    type: 'list',
    name: 'action',
    message: 'Please choose an operation',
-   choices: ['compile', 'deploy', 'test'],
+   choices: ['init', 'compile', 'deploy', 'test'],
    default: defaultAction,
   });
  }
@@ -71,19 +79,39 @@ async function promptForMissingOptions(options) {
 }
 
 export async function cli(args) {
- let options = parseArgumentsIntoOptions(args);
- options = await promptForMissingOptions(options);
- if (options.action === 'compile') {
+
+  let options = parseArgumentsIntoOptions(args);
+  options = await promptForMissingOptions(options);
+
+ if (options.action === 'init') {
+  try {
+   const {stdout} = await execa('git', ['clone', 'https://github.com/arbchain/besu-contracts-boilerplate', '.'])
+  }
+  catch(err) {
+   console.log(logSymbols.warning, 'Make sure run init command in an empty directory')
+   return
+  }
+  console.log(logSymbols.success, 'Project initialised!\n');
+  console.log('What next?\n 1. Install dependencies (npm install) \n 2. Test the project (mirror test)');
+ }
+ else if (options.action === 'compile') {
   compile(options.dir, options.buildPath);
+  console.log(logSymbols.success, 'Compilation successful!\n');
  }
  else if (options.action === 'deploy') {
-  // compile(options.dir);
+  compile(options.dir, options.buildPath);
+  console.log(logSymbols.success, 'Compilation successful!\n');
+
   await deploy(options.buildPath, options.private);
+  console.log(logSymbols.success, 'Deployment successful!\n');
  }
  else if (options.action === 'test') {
 
-  // compile(options.dir);
+  compile(options.dir, options.buildPath);
+  console.log(logSymbols.success, 'Compilation successful!\n');
+
   await deploy(options.buildPath, options.private);
+  console.log(logSymbols.success, 'Deployment successful!\n');
 
   let mocha = new Mocha();
   mocha.timeout(15000);
