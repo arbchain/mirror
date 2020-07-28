@@ -1,0 +1,21 @@
+name: Mirror CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm install
+      - run: npm link
+      - run: mkdir temp 
+      - run: cd temp && mirror init
+      - run: cd temp && npm install
+      - run: cd temp && mirror test
+
