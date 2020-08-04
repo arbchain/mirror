@@ -1,5 +1,6 @@
 # mirror
-
+![Mirror CD](https://github.com/arbchain/mirror/workflows/Mirror%20CD/badge.svg?branch=master)
+![Mirror CI](https://github.com/arbchain/mirror/workflows/Mirror%20CI/badge.svg?branch=master)
 ![version](https://img.shields.io/badge/version-1.1.0beta-blue)
 [![docs](https://img.shields.io/badge/docs-0.1.0-green)](https://arbchain.consensolabs.com)
 ![Contributors](https://img.shields.io/github/contributors/arbchain/mirror)
