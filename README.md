@@ -24,8 +24,3 @@ mirror deploy --private
 # Test using MochaJS
 mirror test
 ```
-
-## Development TODOs:
-
-* [x] Create basic compile and deploy scripts
-* [x] Create a privacy group config for public deployment
