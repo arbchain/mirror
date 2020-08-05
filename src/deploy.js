@@ -109,6 +109,8 @@ export const deploy = async (buildPath, privacy) => {
         console.log("Please compile the contracts first!")
       }
     }
+
+    return true
   }
   catch (err) {
 
@@ -118,6 +120,6 @@ export const deploy = async (buildPath, privacy) => {
     else {
       console.log("Deployment error: ", err)
     }
-
+    return false
   }
 };

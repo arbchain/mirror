@@ -83,6 +83,24 @@ export async function cli(args) {
   let options = parseArgumentsIntoOptions(args);
   options = await promptForMissingOptions(options);
 
+  function compileContract() {
+   if(compile(options.dir, options.buildPath)) {
+    console.log(logSymbols.success, 'Compilation successful!\n');
+   }
+   else {
+    console.log(logSymbols.warning, 'Some compilation failed!\n');
+   }
+  }
+
+  async function deployContract() {
+   if(await deploy(options.buildPath, options.private)) {
+    console.log(logSymbols.success, 'Deployment successful!\n');
+   }
+   else {
+    console.log(logSymbols.error, 'Deployment failed!\n');
+   }
+  }
+
  if (options.action === 'init') {
   try {
    const {stdout} = await execa('git', ['clone', 'https://github.com/arbchain/besu-contracts-boilerplate', '.'])
@@ -95,23 +113,16 @@ export async function cli(args) {
   console.log('What next?\n 1. Install dependencies (npm install) \n 2. Test the project (mirror test)');
  }
  else if (options.action === 'compile') {
-  compile(options.dir, options.buildPath);
-  console.log(logSymbols.success, 'Compilation successful!\n');
+  compileContract()
  }
  else if (options.action === 'deploy') {
-  compile(options.dir, options.buildPath);
-  console.log(logSymbols.success, 'Compilation successful!\n');
-
-  await deploy(options.buildPath, options.private);
-  console.log(logSymbols.success, 'Deployment successful!\n');
+  compileContract()
+  await deployContract()
  }
  else if (options.action === 'test') {
 
-  compile(options.dir, options.buildPath);
-  console.log(logSymbols.success, 'Compilation successful!\n');
-
-  await deploy(options.buildPath, options.private);
-  console.log(logSymbols.success, 'Deployment successful!\n');
+  compileContract()
+  await deployContract()
 
   let mocha = new Mocha();
   mocha.timeout(15000);

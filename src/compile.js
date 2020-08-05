@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 const solc = require("solc");
+const logSymbols = require('log-symbols');
 
 function compileFile(buildPath, dir, file) {
   const fileToCompile = path.join(dir, file);
@@ -47,8 +48,9 @@ function compileFile(buildPath, dir, file) {
       if(compiledCode.errors)
       {
         console.log(compiledCode.errors)
-        if(compiledCode.errors.severity === 'error')
-        return;
+        if(compiledCode.errors.filter(error => error.severity === 'error').length) {
+          return false;
+        }
       }
 
 
@@ -60,8 +62,9 @@ function compileFile(buildPath, dir, file) {
         if(compiledCode.errors)
         {
           console.log(compiledCode.errors)
-          if(compiledCode.errors.severity === 'error')
-          return;
+          if(compiledCode.errors.severity === 'error') {
+            return false;
+          }
         }
     }
 
@@ -93,5 +96,13 @@ export function compile(dirPath, buildPath) {
       solidityFiles.push(file);
     }
   });
-  solidityFiles.forEach((file) => compileFile(buildPath, dirPath, file));
+  const errorFiles = solidityFiles.filter((file) => compileFile(buildPath, dirPath, file)===false)
+  if (errorFiles.length) {
+    console.log('\n Failed to compile: ')
+    errorFiles.forEach(error => console.log(logSymbols.error, error))
+
+    return false
+  }
+
+  return true
 }
