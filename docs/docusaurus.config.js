@@ -5,7 +5,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
+  organizationName: 'arbchain', // Usually your GitHub org/user name.
   projectName: 'mirror', // Usually your repo name.
   themeConfig: {
     navbar: {
