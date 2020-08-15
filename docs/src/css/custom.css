@@ -1,0 +1,61 @@
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. #444950*/
+html[data-theme="dark"] {
+  --ifm-code-background: #444950;
+  --ifm-code-color: white;
+}
+
+:root {
+  --ifm-color-primary: #FCBC2B;
+  --ifm-color-primary-dark: rgb(252, 176, 13);
+  --ifm-color-primary-darker: rgb(252, 219, 82);
+  --ifm-color-primary-darkest: rgb(252, 185, 59);
+  --ifm-color-primary-light: rgb(252, 231, 73);
+  --ifm-color-primary-lighter: rgb(252, 233, 105);
+  --ifm-color-primary-lightest: rgb(248, 252, 116);
+  --ifm-code-font-size: 95%;
+  --ifm-code-color: rgb(41, 45, 62);
+  --code-block-background: rgb(41, 45, 62);
+  --code-block-color: var(--ifm-color-primary-lightest);
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgb(72, 77, 91);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+code{
+  color: var(--ifm-code-color);
+  font-weight: bold;
+  /*font-style: italic;*/
+  background-color:var(--ifm-code-background)
+}
+
+
+.codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-{
+  background-color: var(--code-block-background) !important;
+}
+
+.navbar
+.navbar__logo {
+  height: 45px;
+}
+
+.navbar
+.navbar__brand {
+  height: 3rem;
+}
+
+span.plain{
+  color: var(--code-block-color) !important;
+  /*font-style: italic !important;*/
+  /*font-weight: bold*/
+}
