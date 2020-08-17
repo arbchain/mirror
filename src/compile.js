@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const solc = require("solc");
 const logSymbols = require('log-symbols');
+const {findImports} = require('./import-utils');
 
 function compileFile(buildPath, dir, file) {
   const fileToCompile = path.join(dir, file);
@@ -34,17 +35,20 @@ function compileFile(buildPath, dir, file) {
     },
   };
 
+  /*
+  Outdated import logic
   function findImports() {
       return {
         contents:
             fs.readFileSync(importFiles[0]).toString()
       };
   }
+  */
 
   let compiledCode;
   if (importFiles.length > 0) {
 
-      compiledCode = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
+      compiledCode = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports(dir) }));
       if(compiledCode.errors)
       {
         console.log(compiledCode.errors)
@@ -52,9 +56,6 @@ function compileFile(buildPath, dir, file) {
           return false;
         }
       }
-
-
-
   }
   else
     {
