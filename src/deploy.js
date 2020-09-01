@@ -40,12 +40,12 @@ const createPrivacyGroup = async (participants) => {
 const createPrivateContract = (contract, args, privacyGroupId) => {
 
   //Get the ABI
-  const ContractAbi = require(path.resolve(addressPath, `${contract}.json`));
+  const ContractAbi = require(path.resolve(addressPath, `${contract}_abi.json`));
   //Get the bytecode
   //creating instance of contract
   new web3.eth.Contract(ContractAbi);
 
-  const binary = fs.readFileSync(path.resolve(addressPath, `${contract}.bin`));
+  const binary = require(path.resolve(addressPath, `${contract}_bin.json`)).binary;
 
     //Step 1: Check for the constructor if available
     const constructorAbi = ContractAbi.find((e) => {
@@ -100,13 +100,14 @@ export const deploy = async (buildPath, privacy) => {
       privacyGroup = privacy ? await createPrivacyGroup(migration.contracts[contract].privacyGroupMembers) : privacyGroup
       let privacyGroupId = privacyGroup.privacyGroupId
 
-      const buildExists = await fs.existsSync(addressPath + `/${contract}.bin`) && await fs.existsSync(addressPath + `/${contract}.json`)
+      const buildExists = await fs.existsSync(addressPath + `/${contract}_bin.json`) && await fs.existsSync(addressPath + `/${contract}_abi.json`)
       if (buildExists) {
         const transactionHash = await createPrivateContract(contract, migration.contracts[contract].args, privacyGroupId);
         console.log("Private contract deployed with transaction hash: ", transactionHash);
         await storeTransactionReceipt(contract, transactionHash);
       } else {
         console.log("Please compile the contracts first!")
+        return false
       }
     }
 
