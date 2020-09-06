@@ -20,9 +20,11 @@ function parseArgumentsIntoOptions(rawArgs) {
  const args = arg(
      {
       '--private': Boolean,
+      '--onchain-privacy': Boolean,
       '--dir': String,
       '--testDir': String,
       '--buildPath': String,
+      '--network': String,
       '--yes': Boolean,
       '-p': '--private',
       '-y': '--yes',
@@ -34,9 +36,11 @@ function parseArgumentsIntoOptions(rawArgs) {
  return {
   skipPrompts: args['--yes'] || false,
   private: args['--private'] || false,
+  onchain: args['--onchain-privacy'] || false,
   dir: args['--dir'] || 'contract',
   testDir: args['--testDir'] || 'test',
   buildPath: args['--buildPath'] || buildDir,
+  network: args['--network'] || 'node1',
   action: args._[0],
  };
 }
@@ -71,10 +75,12 @@ async function promptForMissingOptions(options) {
  }
 
  const answers = await inquirer.prompt(questions);
+
+ const privacy = answers.private !== undefined ? !answers.private : false
  return {
   ...options,
   action: options.action || answers.action,
-  private: options.private || ! answers.private,
+  private: options.private || privacy,
  };
 }
 
@@ -93,7 +99,7 @@ export async function cli(args) {
   }
 
   async function deployContract() {
-   if(await deploy(options.buildPath, options.private)) {
+   if(await deploy(options.buildPath, options.private, options.onchain, options.network)) {
     console.log(logSymbols.success, 'Deployment successful!\n');
    }
    else {
@@ -125,7 +131,7 @@ export async function cli(args) {
   await deployContract()
 
   let mocha = new Mocha();
-  mocha.timeout(15000);
+  mocha.timeout(30000);
   // Add each .js file to the mocha instance
   fs.readdirSync(options.testDir).filter(function(file) {
    // Only keep the .js files
