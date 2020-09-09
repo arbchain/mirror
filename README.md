@@ -27,6 +27,12 @@ mirror compile
 # Deploy a private contract (Set the privacy members in migration directory)
 mirror deploy --private
 
+# Deploy a private contract on a specific network specified in mirror-config.js
+mirror deploy --private --network node1
+
+# Deploy a private contract on besu network that has onchain privacy group configured
+mirror test --private --onchain-privacy
+
 # Test using MochaJS
 mirror test
 ```

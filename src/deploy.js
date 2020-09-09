@@ -82,7 +82,6 @@ const createPrivateContract = (contract, args, privacyGroupId, network) => {
 
   //Create the transaction object
   const contractOptions = {
-    from: '0xf17f52151EbEF6C7334FAD080c5704D77216b732',
     data: `0x${binary}${constructorArgs}`,
     privateFrom: config.networks[network].publicKey,
     privacyGroupId,
