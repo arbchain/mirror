@@ -17,5 +17,5 @@ jobs:
       - run: mkdir temp 
       - run: cd temp && mirror init
       - run: cd temp && npm install
-      - run: cd temp && mirror test
+      - run: cd temp && mirror test --network node1_onchain --onchain-privacy
 

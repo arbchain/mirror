@@ -1,6 +1,6 @@
 {
   "name": "mirror-besu",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A CLI tool to build, test and deploy private besu contracts",
   "main": "src/index.js",
   "bin": {
@@ -38,6 +38,6 @@
     "mocha": "^8.0.1",
     "solc": "^0.6.10",
     "web3": "^1.2.9",
-    "web3-besu": "^0.9.1"
+    "web3-eea": "^0.10.0"
   }
 }

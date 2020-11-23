@@ -1,7 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const Web3 = require("web3");
-const EEAClient = require("web3-besu");
+const EEAClient = require("web3-eea");
 var web3, config, besu;
 
 
